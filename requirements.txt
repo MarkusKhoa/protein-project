@@ -1,0 +1,10 @@
+black
+flake8
+pandas
+biopython
+scikit-learn
+torch
+torchtext
+seaborn
+fastparquet
+numpy
