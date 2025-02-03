@@ -8,3 +8,5 @@ torchtext
 seaborn
 fastparquet
 numpy
+selenium
+loguru
