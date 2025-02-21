@@ -3,6 +3,8 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from loguru import logger
 from tqdm import tqdm
 from Bio import SeqIO
@@ -17,16 +19,35 @@ options.add_argument("--headless")  # Run in headless mode
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
 def get_sequence_from_online_db(prot_id, driver):
-    url = f"https://www.uniprot.org/uniprotkb/{prot_id}/entry#sequences"
-    driver.get(url)
-    
-    # Wait for the browser finish loading all elements
-    driver.implicitly_wait(2)
+    logger.info(f"Processing {prot_id} ID")
+    info_prot_url = f"https://www.uniprot.org/uniprotkb/{prot_id}/entry#sequences"
+    initial_url = info_prot_url
+    driver.get(info_prot_url)
+    driver.implicitly_wait(1)
+    WebDriverWait(driver, 3).until(
+                lambda d: d.execute_script('return document.readyState') == 'complete'
+            )
+    current_url = driver.current_url
+    if current_url != initial_url:
+        logger.error(f"This entry sequence: {info_prot_url} is no longer annotated in UniProtKB")
+        return None
+    try:
+        button = WebDriverWait(driver, 3).until(
+        EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Show sequence')]")))
+        button.click()
+    except:
+        logger.error(f"No need to click the button 'Show sequence' ")
 
-    # Find all tags whose class name is `sequence__chunk`
-    sequence_chunks = driver.find_elements(By.CLASS_NAME, "sequence__chunk")
-    final_sequence = "".join(chunk.text for chunk in sequence_chunks)
-    return final_sequence
+    try:
+        # Use explicit wait for sequence chunks
+        sequence_chunks = WebDriverWait(driver, 3).until(
+            EC.presence_of_all_elements_located((By.CLASS_NAME, "sequence__chunk"))
+        )
+        final_sequence = "".join(chunk.text for chunk in sequence_chunks)
+        return final_sequence
+    except Exception as e:
+        logger.error(f"Failed to find sequence chunks: {str(e)}")
+        return None
 
 def parse_fasta(fasta_file):
     seq_dict = {}
@@ -81,8 +102,8 @@ def process_batch(batch_df, batch_num):
         ]
         
         # Save batch results
-        batch_filename = f"data/development_set/all_binding_sites_batch_{batch_num}.csv"
-        batch_df.to_csv(batch_filename, index=False, encoding="utf-8-sig")
+        batch_filename = f"data/development_set/missing_val_binding_sites_batch_{batch_num}.csv"
+        batch_df.to_csv(batch_filename, index = False, encoding = "utf-8-sig")
         logger.info(f"Saved batch {batch_num}")
         
         # Clean up
@@ -96,34 +117,35 @@ def process_batch(batch_df, batch_num):
 
 
 def main_pipeline():
-    fasta_file = "data/development_set/all.fasta"
-    metal_label_file = "data/development_set/binding_residues_2.5_metal.txt"
-    nuclear_label_file = "data/development_set/binding_residues_2.5_nuclear.txt"
-    small_label_file = "data/development_set/binding_residues_2.5_small.txt"
+    # fasta_file = "data/development_set/all.fasta"
+    # metal_label_file = "data/development_set/binding_residues_2.5_metal.txt"
+    # nuclear_label_file = "data/development_set/binding_residues_2.5_nuclear.txt"
+    # small_label_file = "data/development_set/binding_residues_2.5_small.txt"
 
     logger.info("Starting pipeline...")
 
     # Load data
-    seq_dict = parse_fasta(fasta_file)
-    metal_binding_sites_df = parse_labels(metal_label_file, 'metal')
-    nuclear_binding_sites_df = parse_labels(nuclear_label_file, 'nuclear')
-    small_binding_sites_df = parse_labels(small_label_file, 'small')
-    all_binding_sites_df = pd.concat([metal_binding_sites_df, nuclear_binding_sites_df, small_binding_sites_df],
-                                 ignore_index=True)
-    
+    # seq_dict = parse_fasta(fasta_file)
+    # metal_binding_sites_df = parse_labels(metal_label_file, 'metal')
+    # nuclear_binding_sites_df = parse_labels(nuclear_label_file, 'nuclear')
+    # small_binding_sites_df = parse_labels(small_label_file, 'small')
+    # all_binding_sites_df = pd.concat([metal_binding_sites_df, nuclear_binding_sites_df, small_binding_sites_df],
+    #                              ignore_index=True)
+    missing_val_binding_sites_df = pd.read_csv("data/development_set/missing_val_binding_sites_df.csv")
+
     # Map available sequence in dataset
-    all_binding_sites_df['sequence'] = all_binding_sites_df['prot_id'].map(seq_dict)
+    # missing_val_binding_sites_df['sequence'] = missing_val_binding_sites_df['prot_id'].map(seq_dict)
     
     # Process in parallel batches
     batch_size = 1000
     num_workers = min(multiprocessing.cpu_count(), 4)  # Use up to 4 cores
-    total_samples = len(all_binding_sites_df)
+    total_samples = len(missing_val_binding_sites_df)
     
     # Split data into batches
     batches = []
-    for batch_start in range(0, total_samples, batch_size):
+    for batch_start in range(0, total_samples, batch_size): # edit to total_samples soon
         batch_end = min(batch_start + batch_size, total_samples)
-        batch_df = all_binding_sites_df.iloc[batch_start:batch_end].copy()
+        batch_df = missing_val_binding_sites_df.iloc[batch_start:batch_end].copy()
         batch_num = batch_start//batch_size + 1
         batches.append((batch_df, batch_num))
     
