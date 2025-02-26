@@ -1,2 +1,6 @@
 github_token.txt
+*.txt
 /__pycache__/
+data/trained_models/
+/ProSST/residue_sequence/
+/ProSST/substitutions/
