@@ -1,4 +1,5 @@
 import requests
+import pandas as pd
 import numpy as np
 
 from loguru import logger
@@ -62,10 +63,19 @@ def calculate_residue_distances(coordinates):
     return distances
 
 
+train_df = pd.read_csv("data/development_set/full_grouped_train_binding_sites_df.csv")
+test_df = pd.read_csv("data/development_set/full_grouped_test_binding_sites_df.csv")
 
-uniprot_id = "P12345"  # Example UniProt ID
-pdb_file = "data/pdb_files/P12345_alphafold.pdb"
-protein_structure = get_structure(uniprot_id, pdb_file)
+idx = 10
+
+sample_uniprot_id = train_df.iloc[idx]['prot_id']
+sequence_protein = train_df.iloc[idx]['sequence']
+
+print(f"Prot ID: {sample_uniprot_id}")
+
+# uniprot_id = "P12345"  # Example UniProt ID
+pdb_file = f"data/pdb_files/{sample_uniprot_id}_alphafold.pdb"
+protein_structure = get_structure(sample_uniprot_id, pdb_file)
 
 coordinates = extract_coordinates(protein_structure)
 amino_acids = get_amino_acid_types(protein_structure)
@@ -74,6 +84,8 @@ residue_distances = calculate_residue_distances(coordinates)
 
 print(f"Amino acids: {amino_acids}")
 print(f"Secondary structure: {secondary_structure}")
+print(f"Sequence length: {len(sequence_protein)}")
+print(f"Secondary structures length: {len(secondary_structure)}")
 print(f"Residue distances: {residue_distances}")
 
 
