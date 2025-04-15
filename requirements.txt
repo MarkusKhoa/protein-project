@@ -13,3 +13,7 @@ loguru
 tf-keras
 accelerate>0.26.0
 datasets
+transformers
+torch-geometric
+mdtraj
+esm
