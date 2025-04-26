@@ -16,7 +16,9 @@ Before running any code in this repository:
 
 1. **Data Paths**: 
     - Modify all data file paths according to your local setup
-    - Check and update paths in configuration files
+    - Data we used for training and testing: `data/development_set/full_grouped_train_binding_sites_df.csv` (Training data), `data/development_set/full_grouped_test_binding_sites_df.csv (TestSet300)`, `data/independent_set/grouped_test_46_new_binding_sites.csv` (TestSetNew46)
+    - Data file path for storing protein's predicted structures using ESMFold: `data/esmFold_pdb_files`
+    - Check and update paths in configuration files to align with your local file path.
     - Ensure data files are in the correct locations
 
 2. **Execution Order**:
