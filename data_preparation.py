@@ -18,6 +18,7 @@ from pprint import pprint
 from datasets import Dataset
 from datetime import datetime
 from IPython.display import display
+from tqdm import tqdm
 
 
 def load_fasta_dataframe(file_path):
@@ -37,7 +38,44 @@ def load_fasta_dataframe(file_path):
     df_fasta["sequence_length"] = df_fasta["sequence"].apply(len)
     return df_fasta
 
+def strimed_labels_string_to_list(s):
+    for char in s:
+        if char.isnumeric() or char == ",":
+            pos = s.index(char)
+            break
+    protein_str = s[:pos].strip()
+    labels_str = s[pos:].strip()
+    labels_list = [int(label.strip()) for label in labels_str if label.strip().isdigit()]
+    return protein_str, labels_list
 
+def load_graphddips_fasta_dataframe(file_path):
+    """
+    Load fasta file into a pandas dataframe
+    :param file_path: path to fasta file
+    :return: dataframe with columns 'id', 'sequence', 'seq_len'
+    """
+    # read fasta file
+    records = [
+        (record.id, str(record.seq)) for record in SeqIO.parse(file_path, "fasta")
+    ]
+
+    protein_ids, proteins_lst, labels_lst = [], [], []
+
+    for record in tqdm(records, total=len(records)):
+        if not isinstance(record[1], str):
+            raise ValueError(f"Invalid sequence for record {record[0]}: {record[1]}")
+        protein_str, labels_list = strimed_labels_string_to_list(record[1])
+        proteins_lst.append(protein_str)
+        labels_lst.append(labels_list)
+        protein_ids.append(record[0])
+    
+    initial_df = pd.DataFrame({
+        "id": protein_ids,
+        "sequence": proteins_lst,
+        "labels": labels_lst
+    })
+
+    return initial_df
 
 def load_binding_sites_dataframe(file_path, target=None):
     """
@@ -182,40 +220,21 @@ def add_any_ligand_binding_sites(df):
 
 if __name__ == "__main__":
     # Example usage
-    fasta_file_path = "data/independent_set/indep_set.fasta"
-    test_binding_sites_file_path = "data/independent_set/indep_set.txt"
+    train315_fasta_file_path = "data/development_set/Train_335.fa"
+    test60_fasta_file_path = "data/development_set/Test_60.fa"
+    train335_fasta_file_path = "data/development_set/Train_335.fa"
 
-    # Load data
-    df_proteins = load_fasta_dataframe(fasta_file_path)
-    # df_binding_sites = load_binding_sites_dataframe(test_binding_sites_file_path)
+    intial_train_335_df = load_graphddips_fasta_dataframe(train335_fasta_file_path)
+    intial_train_315_df = load_graphddips_fasta_dataframe(train315_fasta_file_path)
+    intial_test_60_df = load_graphddips_fasta_dataframe(test60_fasta_file_path)
 
-    binding_files = {
-        "metal": "data/independent_set/binding_residues_metal.txt",
-        "nuclear": "data/independent_set/binding_residues_nuclear.txt",
-        "small": "data/independent_set/binding_residues_small.txt"
-    }
+    # total_train_df = pd.concat([intial_train_335_df, intial_train_315_df], ignore_index=True)
 
-    # Map proteins with binding sites
-    initial_labeled_proteins_df = map_proteins_with_binding_sites(df_proteins, binding_files)
-    multi_labeled_proteins_df = create_multi_label_binding_sites(initial_labeled_proteins_df)
-    grouped_labeled_proteins_df = group_binding_sites(multi_labeled_proteins_df)
-    grouped_labeled_proteins_df = add_any_ligand_binding_sites(grouped_labeled_proteins_df)
+    # total_train_df.to_csv("data/development_set/total_train_335_315.csv", index=False)
+    intial_train_315_df.to_csv("data/development_set/train_315.csv", index=False)
+    intial_train_335_df.to_csv("data/development_set/train_335.csv", index=False)
+    # intial_test_60_df.to_csv("data/development_set/test_60.csv", index=False)
 
-    grouped_labeled_proteins_df.to_csv("data/independent_set/grouped_test_46_new_binding_sites.csv", index=False)
+    print("Data preparation completed successfully!")
     
-    # df_result.to_csv("data/independent_set/indep_set_binding_sites.csv", index=False)
-    # display(df_result)
-
-    # binding_sites_df = pd.read_csv("data/development_set/all_binding_sites_complete.csv")
-    # binding_sites_df['binding_sites'] = binding_sites_df['binding_sites'].apply(ast.literal_eval)
-
-    # testing_binding_sites_df = binding_sites_df.loc[(binding_sites_df['prot_id'].isin(test_ids))].reset_index()
-
-    # # Create multi-label binding sites
-
-    # full_test_binding_sites_df = create_multi_label_binding_sites(testing_binding_sites_df)
-
-    # # grouped_train_binding_sites_df = group_binding_sites(full_train_binding_sites_df)
-    # grouped_test_binding_sites_df = group_binding_sites(full_test_binding_sites_df)
-    # grouped_test_binding_sites_df.to_csv("data/independent_set/grouped_test_46_new_binding_sites.csv", index=False)
     
