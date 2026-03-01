@@ -125,10 +125,8 @@ def map_proteins_with_binding_sites(df_proteins, binding_files):
     :param binding_files: Dictionary mapping ligand types to their respective binding files.
     :return: DataFrame with ligand types and binding site positions.
     """
-    # Initialize a dictionary to store binding site data
     binding_data = []
 
-    # Iterate over each ligand type and its corresponding file
     for ligand_type, file_path in binding_files.items():
         with open(file_path, "r") as f:
             for line in f:
@@ -219,22 +217,8 @@ def add_any_ligand_binding_sites(df):
 
 
 if __name__ == "__main__":
-    # Example usage
-    train315_fasta_file_path = "data/development_set/Train_335.fa"
-    test60_fasta_file_path = "data/development_set/Test_60.fa"
-    train335_fasta_file_path = "data/development_set/Train_335.fa"
-
-    intial_train_335_df = load_graphddips_fasta_dataframe(train335_fasta_file_path)
-    intial_train_315_df = load_graphddips_fasta_dataframe(train315_fasta_file_path)
-    intial_test_60_df = load_graphddips_fasta_dataframe(test60_fasta_file_path)
-
-    # total_train_df = pd.concat([intial_train_335_df, intial_train_315_df], ignore_index=True)
-
-    # total_train_df.to_csv("data/development_set/total_train_335_315.csv", index=False)
-    intial_train_315_df.to_csv("data/development_set/train_315.csv", index=False)
-    intial_train_335_df.to_csv("data/development_set/train_335.csv", index=False)
-    # intial_test_60_df.to_csv("data/development_set/test_60.csv", index=False)
-
+    test_315_df = load_graphddips_fasta_dataframe("data/development_set/Test_315.fa")
+    test_315_df.to_csv("data/development_set/Test_315.csv", index=False, encoding="utf-8-sig")
     print("Data preparation completed successfully!")
     
     

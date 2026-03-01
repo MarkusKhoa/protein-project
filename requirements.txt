@@ -1,6 +1,7 @@
 black
 flake8
 pandas
+requests
 biopython
 scikit-learn
 torch
@@ -11,9 +12,14 @@ numpy
 selenium
 loguru
 tf-keras
-accelerate>0.26.0
+accelerate
 datasets
 transformers
 torch-geometric
 mdtraj
-esm
+Esm
+huggingface_hub
+fsspec
+pykan
+dssp
+pyyaml

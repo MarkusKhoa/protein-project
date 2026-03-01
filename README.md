@@ -3,33 +3,82 @@
 ## Project Overview
 This repository contains various implementations and experiments for protein structure analysis using different deep learning approaches.
 
+## Reproducible Pipeline (Binding Site Prediction)
+
+The `run_pipeline.py` script provides an end-to-end, reproducible pipeline extracted from `GraphSAGE-improving.ipynb`. It supports multiple GNN backbones: **GraphSAGE**, **GCN**, and **GAT**.
+
+### Quick Start
+
+```bash
+# Full run with default config (GraphSAGE)
+python run_pipeline.py --config configs/graphsage_default.yaml
+
+# Select backbone via CLI
+python run_pipeline.py --config configs/graphsage_default.yaml --model gcn
+python run_pipeline.py --config configs/graphsage_default.yaml --model gat
+
+# Smoke test (minimal data for quick verification)
+python run_pipeline.py --config configs/graphsage_default.yaml --smoke
+```
+
+### CLI Options
+
+| Option | Description |
+|--------|-------------|
+| `--config` | Path to YAML config (default: built-in defaults) |
+| `--model` | GNN backbone: `graphsage`, `gcn`, `gat` |
+| `--device` | Device: `cuda` or `cpu` |
+| `--seed` | Random seed for reproducibility |
+| `--save-dir` | Output directory for checkpoints and metrics |
+| `--smoke` | Smoke test with 4 train + 2 test samples |
+
+### Data Paths
+
+Update `configs/graphsage_default.yaml` or pass a custom config:
+
+- `train_csv`: Training CSV with `prot_id`, `sequence`, `labels` (list format)
+- `test_csv`: Test CSV with same columns
+- `pdb_dir`: Directory containing PDB files (e.g. `{prot_id}.pdb` or `{prot_id}_alphafold.pdb`)
+
+### Artifacts
+
+Outputs are saved under `artifacts/` (or `--save-dir`):
+
+- `{backbone}_best_model.pth`: Best model checkpoint
+- `run_metadata.json`: Config, metrics, timestamp
+
+### Pipeline Layout
+
+- `pipeline/config.py` – Configuration dataclasses
+- `pipeline/io.py` – Data loading and path resolution
+- `pipeline/embeddings.py` – ESM-2 tokenization and embeddings
+- `pipeline/graph_features.py` – Structure features and graph construction
+- `pipeline/models.py` – GCN, GraphSAGE, GAT backbones
+- `pipeline/losses.py` – Loss functions and binding features
+- `pipeline/train.py` – Training loop
+- `pipeline/evaluate.py` – Evaluation metrics
+
+Existing helper scripts (`data_preparation.py`, `features_extraction.py`, `alphafold_data_ingestion.py`, etc.) remain for creating multi-label and processed datasets.
+
 ## Repository Structure
-- `GAT-experiments-23Apr`: Final implementation of ESM-2 + GAT with/without KAN
-- `GAT-GCN-improved-20APr`: Final implementation of ESM-2 + GCN with/without KAN
-- `protein_folding`: Code for protein structure prediction using ESMFold
-- `esm-3-emebddings-generation`: ESM-3 embeddings generation via API calls
-- `ESM-3_and_GCN`: Experimental code combining ESM-3 with GCN
+- `run_pipeline.py`: Main CLI for binding site prediction
+- `pipeline/`: Modular pipeline package
+- `configs/`: YAML configuration files
+- `GraphSAGE-improving.ipynb`: Original notebook (reference)
+- `data_preparation.py`, `features_extraction.py`, etc.: Dataset preparation helpers
 
-## Important Notice ⚠️
+## Important Notice
 
-Before running any code in this repository:
+Before running any code:
 
-1. **Data Paths**: 
-    - Modify all data file paths according to your local setup
-    - Data we used for training and testing: `data/development_set/full_grouped_train_binding_sites_df.csv` (Training data), `data/development_set/full_grouped_test_binding_sites_df.csv (TestSet300)`, `data/independent_set/grouped_test_46_new_binding_sites.csv` (TestSetNew46)
-    - Data file path for storing protein's predicted structures using ESMFold: `data/esmFold_pdb_files`
-    - Check and update paths in configuration files to align with your local file path.
-    - Ensure data files are in the correct locations
-
-2. **Execution Order**:
-    - Generate embeddings first using the ESM-3 code
-    - Run model training scripts afterward
-    - Follow each directory's specific README for detailed instructions
+1. **Data Paths**: Update paths in `configs/graphsage_default.yaml` or your config
+2. **PDB Files**: Ensure `data/esmFold_pdb_files` (or your `pdb_dir`) contains PDB files for all protein IDs in train/test CSVs
+3. **Execution**: `run_pipeline.py` handles embeddings, graph construction, training, and evaluation in one command
 
 ## Prerequisites
 - Python 3.9+
-- Required packages (refer to requirements.txt)
-- Access to ESM-3 API (for embeddings generation)
+- Required packages: `pip install -r requirements.txt`
+- PyTorch, torch-geometric, transformers, mdtraj, pykan
 
 ## Contact
 For questions or issues, please open a GitHub issue in this repository.

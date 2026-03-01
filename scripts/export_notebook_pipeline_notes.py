@@ -1,0 +1,23 @@
+"""Optional: Documents mapping from GraphSAGE-improving.ipynb cells to pipeline modules."""
+# Cell 2  -> pipeline/repro.py (set_seed, get_device)
+# Cell 4  -> pipeline/io.py (load_train_test)
+# Cell 8  -> pipeline/embeddings.py (tokenize_sequences)
+# Cell 9  -> pipeline/embeddings.py (get_embeddings_list)
+# Cell 15 -> pipeline/graph_features.py (get_structure, extract_coordinates, get_amino_acid_types, get_secondary_structure_mdtraj)
+# Cell 16 -> pipeline/graph_features.py (get_hydrophobicity, get_polarity)
+# Cell 17 -> pipeline/graph_features.py (compute_rsa, calculate_depth)
+# Cell 18 -> pipeline/graph_features.py (fuse_features)
+# Cell 19 -> pipeline/graph_features.py (create_edge_features)
+# Cell 20 -> pipeline/graph_features.py (create_graph_data)
+# Cell 23 -> pipeline/graph_features.py (get_graph_data)
+# Cell 26 -> pipeline/models.py (BindingSiteGCN)
+# Cell 27 -> pipeline/models.py (BindingSiteGraphSAGE)
+# Cell 27 -> pipeline/models.py (BindingSiteGraphSAGEWithBias)
+# Cell 28 -> pipeline/models.py (BindingSiteGAT)
+# Cell 37 -> pipeline/losses.py (WeightedCrossEntropyLoss, FocalLoss, PositionAwareLoss)
+# Cell 39 -> pipeline/losses.py (ImprovedPositionAwareLoss)
+# Cell 40 -> pipeline/losses.py (add_binding_features)
+# Cell 42 -> pipeline/evaluate.py (evaluate)
+# Cell 44 -> pipeline/train.py (train)
+# Config   -> pipeline/config.py, configs/graphsage_default.yaml
+# Entrypoint -> run_pipeline.py

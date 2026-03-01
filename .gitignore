@@ -4,3 +4,15 @@ github_token.txt
 data/trained_models/
 /ProSST/residue_sequence/
 /ProSST/substitutions/
+old code/
+*.html
+*.ipynb
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+*.ico
+*.webp

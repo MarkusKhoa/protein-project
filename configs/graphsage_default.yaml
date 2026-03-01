@@ -1,0 +1,40 @@
+# Default pipeline config (local paths, no Colab)
+# Use: python run_pipeline.py --config configs/graphsage_default.yaml
+
+paths:
+  train_csv: data/development_set/train_335.csv
+  test_csv: data/development_set/test_60.csv
+  pdb_dir: data/esmFold_pdb_files
+  save_dir: artifacts
+  embeddings_cache_dir: null
+
+embedding:
+  model_name: facebook/esm2_t33_650M_UR50D
+  max_sequence_length: 1000
+  batch_size: 32
+  embedding_mode: multi_layer
+  num_layers: 2
+
+model:
+  backbone: graphsage  # graphsage | gcn | gat
+  hidden_dim: 512
+  edge_dim: 2
+  gat_heads: 4
+  use_binding_bias: true
+
+training:
+  num_epochs: 70
+  batch_size: 64
+  learning_rate: 0.0001
+  weight_decay: 0.015
+  pos_weight: 7.0
+  position_weight: 1.15
+  hard_negative_threshold: 0.6
+  val_split: 0.02
+  val_threshold: 0.62
+  test_threshold: 0.635
+
+seed: 42
+excluded_protein_ids:
+  - Q9NZV6
+label_column: labels
